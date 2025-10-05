@@ -1,33 +1,36 @@
 services:
-    cloudflared:
-        image: cloudflare/cloudflared:latest
-        container_name: cloudflared
-        restart: unless-stopped
-        command: tunnel --no-autoupdate run --token-file /run/secrets/cloudflared_token
-        networks:
-            - interna
-        volumes:
-            - ./cloudflared:/etc/cloudflared
-        secrets:
-            - cloudflared_token
-
-    portainer:
-        container_name: portainer
-        image: portainer/portainer-ce:lts
-        restart: always
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock
-            - portainer_data:/data
-        ports:
-            - "9443:9443"
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token-file /run/secrets/cloudflared_token
+    networks:
+      - interna
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    secrets:
+      - cloudflared_token
+    depends_on:
+      - portainer
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:lts
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - interna
+    ports:
+      - "9000:9000"   # HTTP
+      - "9443:9443"   # HTTPS
 
 volumes:
-    portainer_data:
-        name: portainer_data
+  portainer_data:
 
 networks:
-    interna:
+  interna:
 
 secrets:
-    cloudflared_token:
-        file: ./secrets/cloudflared_token.txt
+  cloudflared_token:
+    file: ./secrets/cloudflared_token.txt
