@@ -41,6 +41,7 @@ services:
       - ./ollama_data:/root/.ollama
     environment:
       - OLLAMA_HOST=0.0.0.0  # Para que acepte conexiones de Cline
+      - OLLAMA_ORIGINS=*
     deploy:
       resources:
         reservations:
