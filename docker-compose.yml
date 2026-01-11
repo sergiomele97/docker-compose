@@ -1,4 +1,5 @@
 services:
+
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
@@ -12,6 +13,7 @@ services:
       - cloudflared_token
     depends_on:
       - portainer
+      - webtop
       - ollama  # Esperamos a que la IA esté lista
 
   portainer:
@@ -47,6 +49,34 @@ services:
               count: 1
               capabilities: [gpu]
 
+
+  webtop:
+    image: lscr.io/linuxserver/webtop:ubuntu-kde
+    container_name: webtop
+    restart: unless-stopped
+    networks:
+      - interna
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Madrid
+      - CUSTOM_USER=sergio
+      - PASSWORD_FILE=/run/secrets/ubuntu_password
+    secrets:
+      - ubuntu_password
+      - vnc_password
+    volumes:
+      - /dev/shm:/dev/shm
+      - ./ubuntu-home:/config  # persistencia del entorno
+    ports:
+      - "6080:3000"  # HTTP (opcional si usas Cloudflare)
+      - "6081:3001"  # HTTPS (puerto principal)
+    shm_size: "2gb"
+    security_opt:
+      - seccomp=unconfined
+
+
+
 volumes:
   portainer_data:
 
@@ -56,3 +86,7 @@ networks:
 secrets:
   cloudflared_token:
     file: ./secrets/cloudflared_token.txt
+  ubuntu_password:
+    file: ./secrets/ubuntu_password.txt
+  vnc_password:
+    file: ./secrets/vnc_password.txt
